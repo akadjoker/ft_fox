@@ -43,6 +43,8 @@ class Chunk
 		Chunk			*back;
 		int				GetID();
 		BoundingBox& 	getBoundingBox() { return box; }
+		bool			isCubeVisible(int x, int y, int z);
+		void setCube(int x, int y, int z, unsigned char cube);
 	private:
 		BoundingBox box;
 		int				id;
@@ -71,5 +73,4 @@ class Chunk
 		void			addIndices();
 		void			setTranslationsO();
 		void			setCubeO(int nb);
-		bool			isCubeVisible(int x, int y, int z);
 };
