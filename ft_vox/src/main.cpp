@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 
     bool ABORT = false;
 
-    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER & Felix Le Bihan ", 1024, 720))
+    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER & Felix Le Bihan ", 1024, 720,true, true))
     {
         return 1;
     }
@@ -345,7 +345,16 @@ int main(int argc, char *argv[])
     font.SetBatch(&batch);
     font.SetSize(12);
 
+   
+
+
     Camera camera(1024.0f / 720.0f);
+    camera.setAspectRatio(1024.0f / 720.0f);
+
+    //"In the open, minimal distance render will be 160 cubes."
+
+    camera.setFarPlane(160.0f * 2.0f);
+    camera.setNearPlane(0.1f);
     camera.setPosition(0.0f, 130.0f, -20.0f);
 
     Driver::Instance().SetClearColor(0.2f, 0.3f, 0.3f, 1.0);
@@ -467,7 +476,7 @@ int main(int argc, char *argv[])
 
         // Render 3d world
         totalTime += delta;
-        //        Driver::Instance().SetDepthWrite(false);
+  
 
         world.MapHandler();
 
@@ -477,8 +486,7 @@ int main(int argc, char *argv[])
         shaderVoxels.SetMatrix4("MVP", mvp.m);
         shaderVoxels.SetMatrix4("ModelMatrix", identity.m);
 
-        // shaderVoxels.SetMatrix4("projection", projection.m);
-        // shaderVoxels.SetFloat("time", (float)SDL_GetTicks() / 1000.0f);
+  
 
         Driver::Instance().SetDepthTest(true);
         Driver::Instance().SetDepthWrite(true);

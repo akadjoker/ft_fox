@@ -121,6 +121,8 @@ public:
     {
         aspectRatio = ratio;
     }
+    void setNearPlane(float near) { nearPlane = near; }
+    void setFarPlane(float far) { farPlane = far; }
 
     void applyPhysics(float deltaTime)
     {
