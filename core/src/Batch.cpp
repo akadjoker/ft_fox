@@ -577,6 +577,26 @@ void RenderBatch::Line3D(const Vec3 &start, const Vec3 &end)
     Vertex3f(end.x, end.y, end.z);
 }
 
+void RenderBatch::Box(const Vec3 &min, const Vec3 &max)
+{
+     SetMode(LINES);
+
+    Line3D(min.x, min.y, min.z, max.x, min.y, min.z);
+    Line3D(max.x, min.y, min.z, max.x, max.y, min.z);
+    Line3D(max.x, max.y, min.z, min.x, max.y, min.z);
+    Line3D(min.x, max.y, min.z, min.x, min.y, min.z);
+
+    Line3D(min.x, min.y, max.z, max.x, min.y, max.z);
+    Line3D(max.x, min.y, max.z, max.x, max.y, max.z);
+    Line3D(max.x, max.y, max.z, min.x, max.y, max.z);
+    Line3D(min.x, max.y, max.z, min.x, min.y, max.z);
+
+    Line3D(min.x, min.y, min.z, min.x, min.y, max.z);
+    Line3D(max.x, min.y, min.z, max.x, min.y, max.z);
+    Line3D(max.x, max.y, min.z, max.x, max.y, max.z);
+    Line3D(min.x, max.y, min.z, min.x, max.y, max.z);
+}
+
 void RenderBatch::Box(const BoundingBox &box)
 {
     SetMode(LINES);

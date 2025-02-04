@@ -356,9 +356,23 @@ struct Mat4
 	float at(int row, int col) const;
 	const float *data() const;
 
+	Vec4 operator*(const Vec4& v) const 
+	{
+        return Vec4(
+            m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12] * v.w,
+            m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13] * v.w,
+            m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14] * v.w,
+            m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15] * v.w
+        );
+    }
+	
+
 	// Basic operations
 	Mat4 operator*(const Mat4 &other) const;
 	Vec3 transform(const Vec3 &v) const;
+
+	Mat4 transpose() const;
+	Mat4 inverse() const;
 
 	// Create transformation matrices
 	static Mat4 Identity();

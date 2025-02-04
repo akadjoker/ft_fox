@@ -62,6 +62,7 @@ public:
     void Line3D(const Vec3 &start, const Vec3 &end);
     void Line3D(float startX, float startY, float startZ, float endX, float endY, float endZ);
     void Box(const BoundingBox &box);
+    void Box(const Vec3 &min, const Vec3 &max);
 
   
     void Cube(const Vec3 &position, float width, float height, float depth,bool wire=true);

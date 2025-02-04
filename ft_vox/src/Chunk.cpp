@@ -55,79 +55,81 @@ Chunk::~Chunk()
 	vboID = 0;
 }
 
-// void	Chunk::generate(PerlinNoise **mapgen)
-// {
-// 	int				x;
-// 	int				y;
-// 	int				z;
-// 	int				power;
-// 	float			p;
-// 	float			cave;
-// 	float			height;
-// 	float			width;
-// 	float			biome;
-// 	unsigned char	cube;
 
-// 	x = 0;
-// 	while (x < CHUNK_XY)
-// 	{
-// 		y = 0;
-// 		while (y < CHUNK_XY)
-// 		{
-// 			biome = (*mapgen)->noise((float)(x + this->position.x) / 350.0f + 0.5f, (float)(y + this->position.y) / 350.0f + 0.5f, 0.0f);
-// 			if (biome < 0.0f)
-// 			{
-// 				p = (*mapgen)->octave((float)(x + this->position.x) / 30.0f + 0.5f, (float)(y + this->position.y) / 30.0f + 0.5f, 0.0f, 2, 1.0f);
-// 				cube = GRASS;
-// 			}
-// 			else if (biome >= 0.00f && biome < 0.20f)
-// 			{
-// 				p = (*mapgen)->octave((float)(x + this->position.x) / 30.0f + 0.5f, (float)(y + this->position.y) / 30.0f + 0.5f, 0.0f, 2, 1.0f);
-// 				cube = SAND;
-// 			}
-// 			else
-// 			{
-// 				p = ((*mapgen)->octave((float)(x + this->position.x) / 60.0f + 0.5f, (float)(y + this->position.y) / 60.0f + 0.5f, 0.0f, 2, 220.0f) + 0.25f) * 3.0f;
-// 				cube = GRASS;
-// 				if (p < 0.15f && p >= -0.10f)
-// 					cube = SAND;
-// 				else if (p < -0.10f)
-// 				{
-// 					cube = WATER;
-// 					p = -0.10f;
-// 				}
-// 			}
-// 			cave = (*mapgen)->BM3D((float)(x + this->position.x + 1000) / 30.0f + 0.5f, (float)(y + this->position.y + 1001) / 30.0f + 0.5f, 0.0f);
-// 			height = 1.0f + (*mapgen)->BM3D((float)(x + this->position.x + 2000) / 30.0f + 0.5f, (float)(y + this->position.y + 2001) / 30.0f + 0.5f, 0.0f);
-// 			width = 1.0f + (*mapgen)->BM3D((float)(x + this->position.x + 3000) / 30.0f + 0.5f, (float)(y + this->position.y + 3001) / 30.0f + 0.5f, 0.0f);
-// 			power = (int)(13.0f * p) + 128;
-// 			z = 0;
-// 			while (z < power && z < CHUNK_Z)
-// 			{
-// 				if (z != power - 1)
-// 					chunk[x][y][z] = STONE;
-// 				else
-// 					chunk[x][y][z] = cube;
-// 				z++;
-// 			}
-// 			while (z < CHUNK_Z)
-// 			{
-// 				chunk[x][y][z] = AIR;
-// 				z++;
-// 			}
-// 			if (cave > 0.40f)
-// 			{
-// 				for (int q = 0; q < (int)(width * 13.0f + 3.0f); q++)
-// 					chunk[x][y][(int)(height * 55.0f + 30.0f) + q] = AIR;
-// 			}
-// 			y++;
-// 		}
-// 		x++;
-// 	}
-// 	calcVertices();
-// 	generated = true;
-// }
-void Chunk::generate(PerlinNoise **mapgen)
+
+void	Chunk::generateDefault(PerlinNoise **mapgen)
+{
+	int				x;
+	int				y;
+	int				z;
+	int				power;
+	float			p;
+	float			cave;
+	float			height;
+	float			width;
+	float			biome;
+	unsigned char	cube;
+
+	x = 0;
+	while (x < CHUNK_XY)
+	{
+		y = 0;
+		while (y < CHUNK_XY)
+		{
+			biome = (*mapgen)->noise((float)(x + this->position.x) / 350.0f + 0.5f, (float)(y + this->position.y) / 350.0f + 0.5f, 0.0f);
+			if (biome < 0.0f)
+			{
+				p = (*mapgen)->octave((float)(x + this->position.x) / 30.0f + 0.5f, (float)(y + this->position.y) / 30.0f + 0.5f, 0.0f, 2, 1.0f);
+				cube = GRASS;
+			}
+			else if (biome >= 0.00f && biome < 0.20f)
+			{
+				p = (*mapgen)->octave((float)(x + this->position.x) / 30.0f + 0.5f, (float)(y + this->position.y) / 30.0f + 0.5f, 0.0f, 2, 1.0f);
+				cube = SAND;
+			}
+			else
+			{
+				p = ((*mapgen)->octave((float)(x + this->position.x) / 60.0f + 0.5f, (float)(y + this->position.y) / 60.0f + 0.5f, 0.0f, 2, 220.0f) + 0.25f) * 3.0f;
+				cube = GRASS;
+				if (p < 0.15f && p >= -0.10f)
+					cube = SAND;
+				else if (p < -0.10f)
+				{
+					cube = WATER;
+					p = -0.10f;
+				}
+			}
+			cave = (*mapgen)->BM3D((float)(x + this->position.x + 1000) / 30.0f + 0.5f, (float)(y + this->position.y + 1001) / 30.0f + 0.5f, 0.0f);
+			height = 1.0f + (*mapgen)->BM3D((float)(x + this->position.x + 2000) / 30.0f + 0.5f, (float)(y + this->position.y + 2001) / 30.0f + 0.5f, 0.0f);
+			width = 1.0f + (*mapgen)->BM3D((float)(x + this->position.x + 3000) / 30.0f + 0.5f, (float)(y + this->position.y + 3001) / 30.0f + 0.5f, 0.0f);
+			power = (int)(13.0f * p) + 128;
+			z = 0;
+			while (z < power && z < CHUNK_Z)
+			{
+				if (z != power - 1)
+					chunk[x][y][z] = STONE;
+				else
+					chunk[x][y][z] = cube;
+				z++;
+			}
+			while (z < CHUNK_Z)
+			{
+				chunk[x][y][z] = AIR;
+				z++;
+			}
+			if (cave > 0.40f)
+			{
+				for (int q = 0; q < (int)(width * 13.0f + 3.0f); q++)
+					chunk[x][y][(int)(height * 55.0f + 30.0f) + q] = AIR;
+			}
+			y++;
+		}
+		x++;
+	}
+	calcVertices();
+	generated = true;
+}
+void Chunk::generateCity(PerlinNoise **mapgen)
 {
 	int x, y, z, power;
 	float p, cave, height, width;
@@ -135,7 +137,7 @@ void Chunk::generate(PerlinNoise **mapgen)
 
 	const float BIOME_SCALE = 600.0f;
 	const float TERRAIN_SCALE = 100.0f;
-	const float MOUNTAIN_SCALE = 40.0f; 
+	const float MOUNTAIN_SCALE = 40.0f;
 	const float CAVE_THRESHOLD = 0.35f;
 
 	x = 0;
@@ -162,29 +164,25 @@ void Chunk::generate(PerlinNoise **mapgen)
 				2,
 				0.8f);
 
-		
 			float mountainHeight = (*mapgen)->octave(
 				(float)(x + this->position.x) / MOUNTAIN_SCALE + 0.5f,
 				(float)(y + this->position.y) / MOUNTAIN_SCALE + 0.5f,
 				0.0f,
-				4,	 
-				4.0f 
-			);
+				4,
+				4.0f);
 
-	
 			float peakNoise = (*mapgen)->noise(
 				(float)(x + this->position.x) / (MOUNTAIN_SCALE * 0.5f) + 0.5f,
 				(float)(y + this->position.y) / (MOUNTAIN_SCALE * 0.5f) + 0.5f,
 				0.0f);
 
-			
 			if (terrainType > 0.3f)
 			{
-			
+
 				p = mountainHeight;
 				if (peakNoise > 0.6f)
-				{			   // height for peaks
-					p *= 1.5f; // 
+				{ // height for peaks
+					p *= 1.5f;
 				}
 				cube = GRASS;
 			}
@@ -231,7 +229,6 @@ void Chunk::generate(PerlinNoise **mapgen)
 							   0.0f) *
 							   0.4f;
 
-		
 			float heightMod = terrainType > 0.3f ? 25.0f : 8.0f; //  mountain multiplier
 			power = (int)(heightMod * p) + 128;
 
@@ -530,4 +527,112 @@ bool Chunk::HasFourNeigbors()
 int Chunk::GetID()
 {
 	return id;
+}
+
+bool Chunk::rayAABBIntersection(const Vec3 &rayOrigin, const Vec3 &rayDir, const Vec3 &boxMin, const Vec3 &boxMax, float &outDistance)
+{
+	Vec3 invDir = Vec3(1.0f / rayDir.x, 1.0f / rayDir.y, 1.0f / rayDir.z);
+
+	float t1 = (boxMin.x - rayOrigin.x) * invDir.x;
+	float t2 = (boxMax.x - rayOrigin.x) * invDir.x;
+	float t3 = (boxMin.y - rayOrigin.y) * invDir.y;
+	float t4 = (boxMax.y - rayOrigin.y) * invDir.y;
+	float t5 = (boxMin.z - rayOrigin.z) * invDir.z;
+	float t6 = (boxMax.z - rayOrigin.z) * invDir.z;
+
+	float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+	float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+	if (tmax < 0 || tmin > tmax)
+		return false;
+
+	outDistance = tmin;
+	return true;
+}
+bool Chunk::rayIntersectsVoxel(RenderBatch *batch, const Vec3 &rayOrigin, const Vec3 &rayDir, int &outX, int &outY, int &outZ, float &outDistance)
+{
+    float minDist = std::numeric_limits<float>::max();
+    bool hit = false;
+
+ 
+    Vec3 chunkPos(position.x * CHUNK_XY, 0, position.y * CHUNK_XY);
+
+	
+ 
+    for (int x = 0; x < CHUNK_XY; x++)
+    {
+        for (int y = 0; y < CHUNK_XY; y++)
+        {
+            for (int z = 0; z < CHUNK_Z; z++)
+            {
+             
+                if (GetCube(x, y, z) == AIR)
+                    continue;
+
+          
+                Vec3 voxelMin = chunkPos + Vec3(x, y, z);
+                Vec3 voxelMax = voxelMin + Vec3(1, 1, 1); // Cada voxel tem 1x1x1 de tamanho
+
+			//	printf("VoxelMin: %f, %f, %f, VoxelMax: %f, %f, %f\n", voxelMin.x, voxelMin.y, voxelMin.z, voxelMax.x, voxelMax.y, voxelMax.z);
+
+						batch->SetColor(0, 255, 255,255);
+						batch->Cube(voxelMin, 1,1,1,false);
+						//batch->Box(voxelMin, voxelMax);
+
+                float dist;
+      
+                if (rayAABBIntersection(rayOrigin, rayDir, voxelMin, voxelMax, dist))
+                {
+                    
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        outX = x;
+                        outY = y;
+                        outZ = z;
+                        hit = true;
+	
+                    }
+                }
+            }
+        }
+    }
+
+  
+    if (hit)
+    {
+        outDistance = minDist;
+    }
+
+    return hit;
+}
+
+
+bool Chunk::getVoxelFromScreen(float windowWidth, float windowHeight, int mouseX, int mouseY, const Mat4 &projMatrix, const Mat4 &viewMatrix, int &outX, int &outY, int &outZ)
+{
+	
+	float normalizedX = (2.0f * mouseX) / windowWidth - 1.0f;
+	float normalizedY = 1.0f - (2.0f * mouseY) / windowHeight;
+
+	
+	Vec4 rayClip(normalizedX, normalizedY, -1.0f, 1.0f);
+
+ 
+	Mat4 invProj = projMatrix.inverse();
+	Vec4 rayEye = invProj * rayClip;
+	rayEye = Vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
+
+ 
+	Mat4 invView = viewMatrix.inverse();
+	Vec4 rayWorld4 = invView * rayEye;
+	Vec3 rayDir(rayWorld4.x, rayWorld4.y, rayWorld4.z);
+	rayDir = rayDir.normalize();
+
+ 
+	Vec4 eyePos4 = invView * Vec4(0, 0, 0, 1);
+	Vec3 rayOrigin(eyePos4.x, eyePos4.y, eyePos4.z);
+
+	return false;
+	//float distance;
+	//return rayIntersectsVoxel(rayOrigin, rayDir, outX, outY, outZ, distance);
 }

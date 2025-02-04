@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 
     bool ABORT = false;
 
-    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER & Felix Le Bihan ", 1024, 720,true, true))
+    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER & Felix Le Bihan ", 1024, 720, true, true))
     {
         return 1;
     }
@@ -351,9 +351,9 @@ int main(int argc, char *argv[])
     Camera camera(1024.0f / 720.0f);
     camera.setAspectRatio(1024.0f / 720.0f);
 
-    //"In the open, minimal distance render will be 160 cubes."
 
-    camera.setFarPlane(160.0f * 2.0f);
+
+    camera.setFarPlane(VIEW_DISTANCE);
     camera.setNearPlane(0.1f);
     camera.setPosition(0.0f, 130.0f, -20.0f);
 
@@ -455,9 +455,9 @@ int main(int argc, char *argv[])
             camera.rotate(x, -y, mouseSensitivity);
         }
 
-        if (Input::IsKeyPressed(SDLK_b))
+        if (Input::IsKeyPressed(SDLK_e))
         {
-            isDebug = !isDebug;
+            world.switchMode();
         }
 
         Driver::Instance().Clear();
@@ -476,12 +476,15 @@ int main(int argc, char *argv[])
 
         // Render 3d world
         totalTime += delta;
+
+   
   
 
         world.MapHandler();
 
         shaderVoxels.Use();
         Mat4 identity = Mat4::Identity();
+
 
         shaderVoxels.SetMatrix4("MVP", mvp.m);
         shaderVoxels.SetMatrix4("ModelMatrix", identity.m);
@@ -509,6 +512,20 @@ int main(int argc, char *argv[])
 
         glBindVertexArray(vaoID);
         world.LoadChunks();
+        // bool found = false;
+
+        // if (Input::IsMouseButtonDown(SDL_BUTTON_LEFT))
+        // {
+            
+                
+        //     RayPickResult result = world.getChunkAndVoxelFromScreen(&batch, device.GetWidth(), device.GetHeight(), Input::GetMouseX(), Input::GetMouseY());
+        //     if (result.found)
+        //     {
+        //         printf("Voxel: %d, %d, %d\n", result.voxelX, result.voxelY, result.voxelZ);   
+        //         found = true;
+        
+        //     }
+        // }
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
@@ -523,9 +540,23 @@ int main(int argc, char *argv[])
         skybox.Render(skyboxTex);
         glDepthFunc(GL_LESS);
 
-        Driver::Instance().SetBlend(false);
+      //  Driver::Instance().SetBlend(false);
 
-        shader.Use();
+    //    shader.Use();
+
+
+    //     Driver::Instance().SetCullFace(false);
+    //     Driver::Instance().SetBlend(false);
+
+    //     shader.Use();
+    //     shader.SetMatrix4("model", identity.m);
+    //     shader.SetMatrix4("view", view.m);
+    //     shader.SetMatrix4("projection", projection.m);
+
+     
+ 
+  
+    //     batch.Render();
         // Render 2d STUFF
 
         projection = Mat4::Ortho(0.0f, device.GetWidth(), device.GetHeight(), 0.0f, -1.0f, 1.0f);
@@ -541,12 +572,26 @@ int main(int argc, char *argv[])
         batch.SetColor(55, 255, 55, 255);
 
         font.SetSize(20);
-        batch.DrawRectangle(5, 5, 200, 100, Color::GRAY, true);
+        batch.DrawRectangle(5, 5, 200, 120, Color::GRAY, true);
         batch.SetColor(55, 255, 55, 255);
         font.Print(10, 20, "FPS %d", device.GetFPS());
         font.Print(10, 40, "Voxels %d", world.getTotalVoxels());
         font.Print(10, 60, "Cuber %d", world.getTotalCubes());
         font.Print(10, 80, "Vertices %d", world.getTotalVertices());
+        if (world.isCityMode())
+        {
+            font.Print(10, 100, "City Mode");
+        }
+        else
+        {
+            font.Print(10, 100, "Voxel Mode");
+        }
+        // if (found)
+        // {
+        //     font.Print(10, 100, "X: %d", result.voxelX);
+        //     font.Print(10, 120, "Y: %d", result.voxelY);
+        //     font.Print(10, 140, "Z: %d", result.voxelZ);
+        // }
 
 
         batch.Render();
