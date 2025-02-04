@@ -18,12 +18,18 @@ if (WIN32)
     endif()
 
 endif() 
-
+  
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 add_compile_options(
     -Wall 
+    -Wextra 
+    -Werror 
+    -Wno-unused-parameter
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
+    -Wno-unused-result
 )
 
 
@@ -45,7 +51,7 @@ endif()
 
 find_package(OpenGL REQUIRED)
 
-
+ 
 if (WIN32)
     target_link_libraries(vt_vox core m  "${LIBS_DIR}/lib/x64/SDL2main.lib" "${LIBS_DIR}/lib/x64/SDL2.lib"  Winmm.lib opengl32.lib)
 endif()

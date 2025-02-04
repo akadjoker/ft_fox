@@ -286,7 +286,7 @@ int Device::GetHeight() const
     return height;
 }
 
-bool Device::Init(const char *windowTitle, int windowWidth, int windowHeight, bool vzync)
+bool Device::Init(const char *windowTitle, int windowWidth, int windowHeight, bool vzync,bool fullScreen)
 {
     title = windowTitle;
     width = windowWidth;
@@ -297,11 +297,22 @@ bool Device::Init(const char *windowTitle, int windowWidth, int windowHeight, bo
         return false;
     }
 
+    if (fullScreen)
+    {
+        window = SDL_CreateWindow(
+            title.c_str(),
+            0, 0,
+            width, height,
+            SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
+    } else 
+    {
+
     window = SDL_CreateWindow(
         title.c_str(),
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         width, height,
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    }
 
     if (!window)
     {

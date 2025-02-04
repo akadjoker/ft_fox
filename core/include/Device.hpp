@@ -52,7 +52,7 @@ public:
 
     bool Init(const char *windowTitle = "OpenGL Device",
               int windowWidth = 800,
-              int windowHeight = 600, bool vzync = true);
+              int windowHeight = 600, bool vzync = true, bool fullScreen = false);
     void Close();
 
     // Getters

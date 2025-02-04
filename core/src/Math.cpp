@@ -11,6 +11,18 @@ float Vec2::getY() const { return y; }
 void Vec2::setX(float newX) { x = newX; }
 void Vec2::setY(float newY) { y = newY; }
 
+double Vec2::Distance(const Vec2 &a, const Vec2 &b)
+{
+    return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+double Vec2::DistanceSquared(const Vec2 &a, const Vec2 &b)
+{
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+}
+
+
+
 Vec2 Vec2::operator+(const Vec2 &other) const
 {
     return Vec2(x + other.x, y + other.y);
@@ -393,66 +405,77 @@ void Frustum::normalizePlane(int plane)
 // Atualiza os planos do frustum com base na matriz de visão-projeção
 void Frustum::update(const Mat4 &matrix)
 {
-    // Extrair os planos do frustum
+   
     const float *m = matrix.m;
 
-    // RIGHT
-    frustum[0][0] = m[3] - m[0];
-    frustum[0][1] = m[7] - m[4];
-    frustum[0][2] = m[11] - m[8];
-    frustum[0][3] = m[15] - m[12];
-    normalizePlane(0);
+    frustum[0][0] =m[3]  + m[0];
+    frustum[0][1] =m[7]  + m[4];
+    frustum[0][2] =m[11] + m[8];
+    frustum[0][3] =m[15] + m[12];
 
-    // LEFT
-    frustum[1][0] = m[3] + m[0];
-    frustum[1][1] = m[7] + m[4];
-    frustum[1][2] = m[11] + m[8];
-    frustum[1][3] = m[15] + m[12];
-    normalizePlane(1);
+    frustum[1][0] =m[3]  - m[0];
+    frustum[1][1] =m[7]  - m[4];
+    frustum[1][2] =m[11] - m[8];
+    frustum[1][3] =m[15] - m[12];
 
-    // BOTTOM
-    frustum[2][0] = m[3] + m[1];
-    frustum[2][1] = m[7] + m[5];
-    frustum[2][2] = m[11] + m[9];
-    frustum[2][3] = m[15] + m[13];
-    normalizePlane(2);
+    frustum[2][0] =m[3]  - m[1];
+    frustum[2][1] =m[7]  - m[5];
+    frustum[2][2] =m[11] - m[9];
+    frustum[2][3] =m[15] - m[13];
 
-    // TOP
-    frustum[3][0] = m[3] - m[1];
-    frustum[3][1] = m[7] - m[5];
-    frustum[3][2] = m[11] - m[9];
-    frustum[3][3] = m[15] - m[13];
-    normalizePlane(3);
+    frustum[3][0] =m[3]  + m[1];
+    frustum[3][1] =m[7]  + m[5];
+    frustum[3][2] =m[11] + m[9];
+    frustum[3][3] =m[15] + m[13];
 
-    // BACK
-    frustum[4][0] = m[3] - m[2];
-    frustum[4][1] = m[7] - m[6];
-    frustum[4][2] = m[11] - m[10];
-    frustum[4][3] = m[15] - m[14];
-    normalizePlane(4);
+    frustum[4][0] =m[3]  + m[2];
+    frustum[4][1] =m[7]  + m[6];
+    frustum[4][2] =m[11] + m[10];
+    frustum[4][3] =m[15] + m[14];
 
-    // FRONT
-    frustum[5][0] = m[3] + m[2];
-    frustum[5][1] = m[7] + m[6];
-    frustum[5][2] = m[11] + m[10];
-    frustum[5][3] = m[15] + m[14];
-    normalizePlane(5);
+    frustum[5][0] =m[3]  - m[2];
+    frustum[5][1] =m[7]  - m[6];
+    frustum[5][2] =m[11] - m[10];
+    frustum[5][3] =m[15] - m[14];
+
+	float	fscale;
+	for (int i = 0; i < 6; i++)
+	{
+		fscale = sqrtf(frustum[i][0] * frustum[i][0] + frustum[i][1] * frustum[i][1] + frustum[i][2] * frustum[i][2]);
+		frustum[i][0] /= fscale;
+		frustum[i][1] /= fscale;
+		frustum[i][2] /= fscale;
+		frustum[i][3] /= fscale;
+	}
+
+
 }
 
-// Testa se um ponto está dentro do frustum
+static float	distance(Vec3 v1, Vec3 v2, float d)
+{
+	return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + d);
+}
+
+
 bool Frustum::isPointInFrustum(float x, float y, float z) const
 {
+    Vec3 plane;
     for (int i = 0; i < 6; i++)
     {
+        // plane = Vec3(frustum[i][0], frustum[i][1], frustum[i][2]);
+        // if (distance(plane, Vec3(x, y, z), frustum[i][3]) <= 0)
+        //     return false;
         if (frustum[i][0] * x + frustum[i][1] * y + frustum[i][2] * z + frustum[i][3] < 0)
         {
             return false;
         }
-    }
+     }
+
+
+  
     return true;
 }
 
-// Testa se uma esfera está dentro do frustum
 bool Frustum::isSphereInFrustum(float x, float y, float z, float radius) const
 {
     for (int i = 0; i < 6; i++)
@@ -465,7 +488,7 @@ bool Frustum::isSphereInFrustum(float x, float y, float z, float radius) const
     return true;
 }
 
-// Testa se uma BoundingBox está dentro do frustum
+
 bool Frustum::isBoxInFrustum(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const
 {
     for (int i = 0; i < 6; i++)

@@ -1,15 +1,175 @@
 
 #include "Core.hpp"
-#include "ChunkMesh.hpp"
-#include "Chunk.hpp"
 #include "World.hpp"
-
-#include "PlayerPhysics.hpp"
+#include "Chunk.hpp"
 
 extern "C" const char *__lsan_default_suppressions()
 {
     return "leak:libSDL2\n"
            "leak:SDL_DBus\n";
+}
+
+struct Skybox
+{
+    unsigned int skyboxVAO, skyboxVBO;
+
+    void Init()
+    {
+
+        float skyboxVertices[] = {
+
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f};
+
+        glGenVertexArrays(1, &skyboxVAO);
+        glGenBuffers(1, &skyboxVBO);
+        glBindVertexArray(skyboxVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+    void Render(unsigned int skybox)
+    {
+        glBindVertexArray(skyboxVAO);
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+    }
+};
+
+GLuint LoadCubemap(const char *top_name, const char *side_name, const char *bot_name)
+{
+
+    GLenum format = GL_RGB;
+    GLenum glFormat = GL_RGB;
+
+    //   format = GL_RGBA8;
+    //     glFormat = GL_RGBA;
+
+    GLuint texture_id;
+
+    Pixmap top;
+    top.Load(top_name);
+    Pixmap side;
+    side.Load(side_name);
+    Pixmap bot;
+    bot.Load(bot_name);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8.0f);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, side.width, side.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, side.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, side.width, side.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, side.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, top.width, top.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, top.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, bot.width, bot.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, bot.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, side.width, side.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, side.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, side.width, side.height, 0, glFormat,
+                 GL_UNSIGNED_BYTE, side.pixels);
+   // glGenerateMipmap(GL_TEXTURE_2D);
+//  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return texture_id;
+}
+
+GLuint LoadSkybox(const char *top_name, const char *left_name, const char *right_name, const char *back_name, const char *front_name, const char *bot_name)
+{
+    int width;
+    int height;
+
+    GLuint texture_id;
+
+    Pixmap top;
+    top.Load(top_name);
+    Pixmap right;
+    right.Load(right_name);
+    Pixmap left;
+    left.Load(left_name);
+    Pixmap front;
+    front.Load(front_name);
+    Pixmap back;
+    back.Load(back_name);
+    Pixmap bot;
+    bot.Load(bot_name);
+
+    width = top.width;
+    height = top.height;
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, right.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, left.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, top.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, bot.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, front.pixels);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, back.pixels);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return texture_id;
 }
 
 int main(int argc, char *argv[])
@@ -18,7 +178,7 @@ int main(int argc, char *argv[])
 
     bool ABORT = false;
 
-    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER", 1024, 720))
+    if (!device.Init("FT_VOX BY Luis Santos AKA DJOKER & Felix Le Bihan ", 1024, 720))
     {
         return 1;
     }
@@ -27,7 +187,7 @@ int main(int argc, char *argv[])
     batch.Init(1, 1024);
     Shader shader;
     Shader shaderVoxels;
-    Shader cloudShader;
+    Shader skyboxShader;
 
     Font font;
 
@@ -64,110 +224,68 @@ int main(int argc, char *argv[])
     }
 
     {
-        // Vertex Shader
         const char *vShader = GLSL(
-            layout(location = 0) in vec3 aPos;
-            layout(location = 1) in vec2 aTexCoord;
-            layout(location = 2) in vec3 aNormal;
+            layout(location = 0) in vec3 vertexPosition_modelspace;
+            layout(location = 1) in vec3 positions;
+            layout(location = 2) in uint which;
 
-            uniform mat4 model;
-            uniform mat4 view;
-            uniform mat4 projection;
+            out vec3 textureDir;
+            out vec3 worldPos;
+            flat out uint texturess;
 
-            out vec3 Normal;
-            out vec2 TexCoord;
-            out vec3 FragPos;
-            out vec3 ViewPos;
-            out float height;
-            out float visibility;
+            uniform mat4 MVP;
+            uniform mat4 ModelMatrix;
 
             void main() {
-                FragPos = vec3(model * vec4(aPos, 1.0));
-                ViewPos = vec3(view * vec4(FragPos, 1.0));
-                Normal = mat3(transpose(inverse(model))) * aNormal;
-                height = aPos.y; // Para gradiente de altura
-
-                // Fog calculation
-                float distance = length(ViewPos);
-                visibility = clamp(exp(-pow((distance / 500.0), 1.5)), 0.0, 1.0);
-
-                gl_Position = projection * view * vec4(FragPos, 1.0);
-                TexCoord = aTexCoord;
+                vec4 worldPosition = ModelMatrix * vec4(vertexPosition_modelspace + positions, 1);
+                worldPos = worldPosition.xyz;
+                gl_Position = MVP * worldPosition;
+                textureDir = vertexPosition_modelspace;
+                texturess = which;
             });
 
         const char *fShader = GLSL(
-            in vec2 TexCoord;
-            in vec3 Normal;
-            in vec3 FragPos;
-            in vec3 ViewPos;
-            in float height;
-            in float visibility;
+            in vec3 textureDir;
+            in vec3 worldPos;
 
-            out vec4 FragColor;
+            out vec3 color;
 
-            uniform sampler2D texture0;
-            uniform vec3 lightDir = normalize(vec3(-0.5, -1.0, -0.3));
-            uniform vec3 lightColor = vec3(1.0, 1.0, 0.9);
-            uniform float time;
+            flat in uint texturess;
 
-            const float ambientStrength = 0.4;
-            const float diffuseStrength = 0.7;
-            const float specularStrength = 0.3;
-            const float shininess = 32.0;
+            uniform samplerCube grass;
+            uniform samplerCube stone;
+            uniform samplerCube sand;
+            uniform samplerCube water;
 
-            vec3 calculateSkyColor() {
-                // Usa time para criar um ciclo dia/noite suave
-                float dayNightCycle = (sin(time * 0.1) + 1.0) * 0.5;
-                vec3 dayColor = vec3(0.3, 0.5, 0.7);
-                vec3 nightColor = vec3(0.05, 0.1, 0.2);
-                return mix(nightColor, dayColor, dayNightCycle);
-            }
+            // Iluminação
+            uniform vec3 lightDir;
+            uniform vec3 lightColor;
+            uniform vec3 ambientColor;
 
             void main() {
-                vec3 norm = normalize(Normal);
-                vec3 viewDir = normalize(-ViewPos);
+                vec3 texColor;
 
-                // Luz dinâmica baseada no tempo
-                vec3 dynamicLightDir = normalize(vec3(
-                    lightDir.x * cos(time * 0.5),
-                    lightDir.y,
-                    lightDir.z * sin(time * 0.5)));
+                if (texturess == 1)
+                    texColor = texture(grass, textureDir).rgb;
+                else if (texturess == 2)
+                    texColor = texture(stone, textureDir).rgb;
+                else if (texturess == 3)
+                    texColor = texture(sand, textureDir).rgb;
+                else if (texturess == 4)
+                    texColor = texture(water, textureDir).rgb;
+                else
+                    texColor = vec3(1.0);
 
-                // Textura base
-                vec4 texColor = texture(texture0, TexCoord);
+                vec3 normal = normalize(textureDir);
+                float diff = max(dot(normal, normalize(lightDir)), 0.0);
+                if (diff < 0.0)
+                {
+                    discard;
+                }
 
-                // Ambiente com ciclo dia/noite
-                float dayNightCycle = (sin(time * 0.1) + 1.0) * 0.5;
-                float dynamicAmbient = mix(0.2, ambientStrength, dayNightCycle);
-                vec3 ambient = dynamicAmbient * lightColor;
+                vec3 lighting = ambientColor + (lightColor * diff);
 
-                // Difuso com luz dinâmica
-                float diff = max(dot(norm, -dynamicLightDir), 0.0);
-                vec3 diffuse = diff * lightColor * diffuseStrength;
-
-                // Especular
-                vec3 reflectDir = reflect(dynamicLightDir, norm);
-                float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-                vec3 specular = specularStrength * spec * lightColor;
-
-                // Gradiente de altura com ondulação suave
-                float heightWave = sin(height * 0.5 + time) * 0.1;
-                float heightFactor = clamp((height + heightWave) / 100.0, 0.0, 1.0);
-                vec3 heightColor = mix(vec3(0.8, 0.8, 0.8), vec3(1.0, 1.0, 1.0), heightFactor);
-
-                // Efeito de borda
-                float edge = 1.0 - max(dot(viewDir, norm), 0.0);
-                vec3 edgeColor = vec3(0.2, 0.2, 0.2) * pow(edge, 3.0);
-
-                // Combinação final
-                vec3 lighting = ambient + diffuse + specular + edgeColor;
-                vec3 finalColor = texColor.rgb * lighting * heightColor;
-
-                // Atmosfera e fog
-                vec3 skyColor = calculateSkyColor();
-                FragColor = mix(vec4(skyColor, 1.0), vec4(finalColor, texColor.a), visibility);
-
-                gl_FragDepth = gl_FragCoord.z + 0.0001;
+                color = texColor * lighting;
             });
 
         if (!shaderVoxels.Create(vShader, fShader))
@@ -175,88 +293,100 @@ int main(int argc, char *argv[])
             ABORT = true;
         }
         shaderVoxels.LoadDefaults();
+
+        Vec3 lightDirection = Vec3(0.0f, 0.9f, 0.02f);
+        Vec3 lightColor = Vec3(1.0f, 1.0f, 1.0f);   // Luz branca
+        Vec3 ambientColor = Vec3(0.5f, 0.5f, 0.5f); // Pequena luz ambiente
+
+        shaderVoxels.SetFloat("lightDir", lightDirection.x, lightDirection.y, lightDirection.z);
+        shaderVoxels.SetFloat("lightColor", lightColor.x, lightColor.y, lightColor.z);
+        shaderVoxels.SetFloat("ambientColor", ambientColor.x, ambientColor.y, ambientColor.z);
     }
 
     {
         // Vertex Shader
-        const char *cloudVShader = GLSL(
+        const char *vShader = GLSL(
             layout(location = 0) in vec3 aPos;
-            layout(location = 1) in vec3 aInstancePos;
-     
+
+            out vec3 TexCoords;
 
             uniform mat4 view;
             uniform mat4 projection;
-            uniform float time;
-           
 
-            void main() 
-            {
-                  vec3 windDirection = vec3(1.0, 0.0, 0.5); // Direção do vento (X, Y, Z)
-                vec3 offset = windDirection * time * 0.6; // Velocidade controlada por time
-                vec3 pos = aPos + aInstancePos + offset;  // Deslocamento aplicado às instâncias
-            
+            void main() {
+                TexCoords = aPos;
 
-                 // vec3 pos = aPos + aInstancePos;
-                 gl_Position = projection * view * vec4(pos, 1.0);
+                mat3 v = mat3(view);
+
+                vec4 pos = projection * mat4(v) * vec4(aPos, 1.0); //removemos a position :D
+                gl_Position = pos.xyww;
             });
 
-        // Fragment Shader
-        const char *cloudFShader = GLSL(
-           out vec4 FragColor;
+        const char *fShader = GLSL(
 
-                void main()
-                {
-                    FragColor = vec4(1.0, 1.0, 1.0, 1.0); // Cor branca para as nuvens
-                
-                });
+            out vec4 FragColor;
 
-        if (!cloudShader.Create(cloudVShader, cloudFShader))
+            in vec3 TexCoords;
+
+            uniform samplerCube skybox;
+
+            void main() {
+                FragColor = texture(skybox, TexCoords);
+            });
+
+        if (!skyboxShader.Create(vShader, fShader))
         {
             ABORT = true;
         }
-        cloudShader.LoadDefaults();
+        skyboxShader.LoadDefaults();
     }
 
     font.LoadDefaultFont();
     font.SetBatch(&batch);
     font.SetSize(12);
 
-    Camera camera(800.0f / 600.0f);
-    camera.setPosition(0.0f, 80.0f, -20.0f);
+    Camera camera(1024.0f / 720.0f);
+    camera.setPosition(0.0f, 130.0f, -20.0f);
 
     Driver::Instance().SetClearColor(0.2f, 0.3f, 0.3f, 1.0);
 
     float cameraSpeed = 5.5f;
     float mouseSensitivity = 0.1f;
 
-    Texture2D texture;
+    GLuint grass = LoadCubemap("assets/grass_top.png", "assets/grass_side.png", "assets/dirt.png");
+    GLuint stone = LoadCubemap("assets/stone.png", "assets/stone.png", "assets/stone.png");
+    GLuint sand = LoadSkybox("assets/sand.png", "assets/sand.png", "assets/sand.png", "assets/sand.png", "assets/sand.png", "assets/sand.png");
+    GLuint water = LoadSkybox("assets/water.png", "assets/water.png", "assets/water.png", "assets/water.png", "assets/water.png", "assets/water.png");
 
-    if (!texture.Load("assets/Blocks.png"))
-    {
-        unsigned char data[4] = {255, 255, 255, 255};
-        texture.LoadFromMemory(data, 4, 1, 1);
-    }
+    GLuint skyboxTex = LoadSkybox("assets/sky/top.jpg", "assets/sky/left.jpg", "assets/sky/right.jpg", "assets/sky/back.jpg", "assets/sky/front.jpg", "assets/sky/bottom.jpg");
+    Skybox skybox;
+    skybox.Init();
 
-    texture.SetAnisotropicFiltering(8.0f);
-    texture.SetWrapS(WrapMode::Repeat);
-    texture.SetWrapT(WrapMode::Repeat);
-    texture.SetMinFilter(FilterMode::Nearest);
-    texture.SetMagFilter(FilterMode::Nearest);
+    //  Texture2D texture;
 
-    World world(12345); // seed para o noise
-    // world.generateInitialChunks();  // gera 9 chunks (3x3)
+    // if (!texture.Load("assets/Blocks.png"))
+    // {
+    //     unsigned char data[4] = {255, 255, 255, 255};
+    //     texture.LoadFromMemory(data, 4, 1, 1);
+    // }
 
-    Frustum frustum;
+    // texture.SetAnisotropicFiltering(8.0f);
+    // texture.SetWrapS(WrapMode::Repeat);
+    // texture.SetWrapT(WrapMode::Repeat);
+    // texture.SetMinFilter(FilterMode::Nearest);
+    // texture.SetMagFilter(FilterMode::Nearest);
 
     bool isDebug = false;
-
-    CollisionSystem collision(&world);
-
-    CloudSystem clouds(12345);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_MULTISAMPLE);
     float totalTime = 0.0f;
 
-    clouds.update(camera.getPosition());
+    GLuint vaoID;
+    glGenVertexArrays(1, &vaoID);
+    glBindVertexArray(0);
+    World world(&camera, false, 0);
 
+    float move = 5;
 
     while (device.Running())
     {
@@ -266,12 +396,16 @@ int main(int argc, char *argv[])
         float delta = device.GetFrameTime();
 
         Vec3 force(0.0f, 0.0f, 0.0f);
-        float moveForce = cameraSpeed * 100.0f; // Força de aceleração
 
-        if (Input::IsKeyPressed(SDLK_f))
+        if (Input::IsKeyDown(SDLK_q))
         {
-            camera.swicthFly();
+            move = 5 * 20;
         }
+        else
+        {
+            move = 5;
+        }
+        float moveForce = cameraSpeed * move; // Força de aceleração
 
         if (Input::IsKeyDown(SDLK_w))
         {
@@ -291,15 +425,15 @@ int main(int argc, char *argv[])
             force = force + camera.getRight() * moveForce;
         }
 
-        if (Input::IsKeyDown(SDLK_SPACE) && camera.isOnGround())
-        {
-            force = force + Vec3(0.0f, 5000.0f, 0.0f); // Pular
-        }
+        // if (Input::IsKeyDown(SDLK_SPACE) && camera.isOnGround())
+        // {
+        //     force = force + Vec3(0.0f, 5000.0f, 0.0f); // Pular
+        // }
 
         camera.addForce(force, delta);
         camera.applyPhysics(delta);
 
-        Vec3 playerPos = camera.getPosition();
+        //  Vec3 playerPos = camera.getPosition();
 
         // if (collision.checkAndResolveCollision(camera))
         // {
@@ -325,57 +459,65 @@ int main(int argc, char *argv[])
         Mat4 view = camera.getViewMatrix();
         camera.setAspectRatio(device.GetWidth() / device.GetHeight());
 
-        Mat4 viewProjectionMatrix = projection * view;
-        frustum.update(viewProjectionMatrix);
+        //  Mat4 viewProjectionMatrix = projection * view;
 
-        Mat4 identity = Mat4::Identity();
+        Mat4 mvp = projection * view;
+
+        camera.getFrustum()->update(mvp);
 
         // Render 3d world
         totalTime += delta;
-//        Driver::Instance().SetDepthWrite(false);
-        Driver::Instance().SetBlend(true);
-        Driver::Instance().SetBlendMode(BlendMode::BLEND);
-        Driver::Instance().SetDepthTest(true);
+        //        Driver::Instance().SetDepthWrite(false);
 
+        world.MapHandler();
 
         shaderVoxels.Use();
-        shaderVoxels.SetMatrix4("model", identity.m);
-        shaderVoxels.SetMatrix4("view", view.m);
-        shaderVoxels.SetMatrix4("projection", projection.m);
-        shaderVoxels.SetFloat("time", (float)SDL_GetTicks() / 1000.0f);
+        Mat4 identity = Mat4::Identity();
 
-        texture.Use(0);
+        shaderVoxels.SetMatrix4("MVP", mvp.m);
+        shaderVoxels.SetMatrix4("ModelMatrix", identity.m);
 
+        // shaderVoxels.SetMatrix4("projection", projection.m);
+        // shaderVoxels.SetFloat("time", (float)SDL_GetTicks() / 1000.0f);
+
+        Driver::Instance().SetDepthTest(true);
         Driver::Instance().SetDepthWrite(true);
         Driver::Instance().SetCullFace(true);
-        world.update(playerPos);
-        world.render(playerPos, shaderVoxels, frustum);
+        Driver::Instance().SetBlend(false);
 
+        shaderVoxels.SetInt("grass", 0);
+        shaderVoxels.SetInt("stone", 1);
+        shaderVoxels.SetInt("sand", 2);
+        shaderVoxels.SetInt("water", 3);
 
-        cloudShader.Use();
-        cloudShader.SetMatrix4("view", view.m);
-        cloudShader.SetMatrix4("projection", projection.m);
-        cloudShader.SetFloat("time", (float)SDL_GetTicks() / 1000.0f);
-        clouds.update(playerPos);
-        clouds.render();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, grass);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, stone);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, sand);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, water);
 
-
+        glBindVertexArray(vaoID);
+        world.LoadChunks();
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glBindVertexArray(0);
 
         Driver::Instance().SetCullFace(false);
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.Use();
+        skyboxShader.SetMatrix4("view", view.m);
+        skyboxShader.SetMatrix4("projection", projection.m);
+        skyboxShader.SetInt("skybox", 0);
+        skybox.Render(skyboxTex);
+        glDepthFunc(GL_LESS);
+
         Driver::Instance().SetBlend(false);
 
         shader.Use();
-        shader.SetMatrix4("model", identity.m);
-        shader.SetMatrix4("view", view.m);
-        shader.SetMatrix4("projection", projection.m);
-
-        shader.SetMatrix4("model", identity.m);
-        batch.SetColor(255, 255, 255, 255);
-        if (isDebug)
-            world.debug(batch, frustum);
-        batch.Grid(10, 10);
-        batch.Render();
-
         // Render 2d STUFF
 
         projection = Mat4::Ortho(0.0f, device.GetWidth(), device.GetHeight(), 0.0f, -1.0f, 1.0f);
@@ -384,37 +526,34 @@ int main(int argc, char *argv[])
         Driver::Instance().SetDepthTest(false);
 
         shader.Use();
+
         shader.SetMatrix4("model", identity.m);
         shader.SetMatrix4("view", identity.m);
         shader.SetMatrix4("projection", projection.m);
-        batch.SetColor(255, 255, 255, 255);
+        batch.SetColor(55, 255, 55, 255);
 
         font.SetSize(20);
-        batch.DrawRectangle(5, 5, 200, 100, Color::BLACK, true);
-        batch.SetColor(255, 255, 255, 255);
+        batch.DrawRectangle(5, 5, 200, 100, Color::GRAY, true);
+        batch.SetColor(55, 255, 55, 255);
         font.Print(10, 20, "FPS %d", device.GetFPS());
         font.Print(10, 40, "Voxels %d", world.getTotalVoxels());
-        font.Print(10, 60, "Chunks %d", world.getTotalChunks());
-        font.Print(10, 80, "Triangles %d", world.getTotalTris());
+        font.Print(10, 60, "Cuber %d", world.getTotalCubes());
+        font.Print(10, 80, "Vertices %d", world.getTotalVertices());
+
 
         batch.Render();
 
         device.Swap();
     }
+    LogInfo("Shutting down.");
 
-    world.close();
-    clouds.destroy();
-    texture.Release();
     shaderVoxels.Release();
-    cloudShader.Release();
+    world.clean();
+
     font.Release();
     batch.Release();
     shader.Release();
-    while (world.IsRunning())
-    {
-        SDL_Delay(1);
-    }
-    LogInfo("Shutting down.");
+
     device.Close();
     return 0;
 }

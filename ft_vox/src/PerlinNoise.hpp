@@ -18,6 +18,7 @@ public:
         : seed(seed), frequency(frequency), amplitude(amplitude), octaves(octaves), persistence(persistence)
     {
     }
+    float	octave(float x, float y, float z, int octaves, float persistence);
 
     float noise(float x, float z) const;
     float noise(float x, float y, float z) const;

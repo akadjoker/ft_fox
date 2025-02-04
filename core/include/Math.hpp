@@ -144,6 +144,10 @@ struct Vec2
 	void setX(float x);
 	void setY(float y);
 
+	static double Distance(const Vec2 &a, const Vec2 &b);
+	static double DistanceSquared(const Vec2 &a, const Vec2 &b);
+	void set(float x, float y) { this->x = x; this->y = y; }
+
 	// Operations
 	Vec2 operator+(const Vec2 &other) const;
 	Vec2 operator-(const Vec2 &other) const;

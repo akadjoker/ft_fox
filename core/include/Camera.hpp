@@ -23,10 +23,11 @@ private:
 
     float gravity = -9.8f;      // Gravidade
     float drag = 0.9f;          // Resistência do ar
-    float acceleration = 30.0f; // Aceleração ao pressionar teclas
+    float acceleration = 30.0f; // Aceleração 
 
     bool onGround = false;
     bool isFly = true;
+     Frustum *frustum;
 
 public:
     Camera(
@@ -39,13 +40,20 @@ public:
                               worldUp(up),
                               yaw(yaw),
                               pitch(pitch),
-                              fov(45.0f),
+                              fov(80.0f),
                               aspectRatio(aspect),
-                              nearPlane(0.1f),
-                              farPlane(1500.0f)
+                              nearPlane(0.5f),
+                              farPlane(3000.0f)
     {
+        frustum = new Frustum();
         updateCameraVectors();
     }
+    ~Camera() 
+    {
+        delete frustum;
+    }
+
+    Frustum * getFrustum() { return frustum; }
 
     Mat4 getViewMatrix() const
     {
@@ -56,6 +64,8 @@ public:
     {
         return Mat4::Perspective(fov * M_PI / 180.0f, aspectRatio, nearPlane, farPlane);
     }
+
+  
 
     void move(float distance)
     {
@@ -134,6 +144,7 @@ public:
     Vec3 getVelocity() const { return velocity; }
     void setVelocity(const Vec3 &vel) { velocity = vel; }
     void setOnGround(bool value) { onGround = value; }
+   
 
 private:
     void updateCameraVectors()

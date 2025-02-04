@@ -18,9 +18,18 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
+ 
 file(GLOB SOURCES "src/*.cpp")
 add_library(core STATIC  ${SOURCES})
+add_compile_options(
+    -Wall 
+    -Wextra 
+    -Werror 
+    -Wno-unused-parameter
+    -Wno-unused-variable
+    -Wno-unused-but-set-variable
+    -Wno-unused-result
+)
 
  
 target_include_directories(core PUBLIC "${LIBS_DIR}/include" include include/std src)
